@@ -1,0 +1,26 @@
+name: weed-robot
+channels:
+  - pytorch
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pytorch
+  - torchvision
+  - pip
+  - numpy
+  - pandas
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - pillow
+  - opencv
+  - pyyaml
+  - jupyterlab
+  - ipykernel
+  - pytest
+  - pip:
+      - timm
+      - albumentations
+      - streamlit
+      - mlflow
+      - grad-cam

@@ -1,0 +1,17 @@
+# Maps each source dataset's labels onto our 5 classes. DRAFT: verify against real label files.
+deepweeds:
+  # species labels 0-7 -> weed; label 8 "Negative" needs inspection before mapping
+  species: weed
+  negative: TODO
+plant_seedlings:
+  # all images are seedling-stage plants
+  crops: [Maize, Common wheat, Sugar beet]   # -> desired_plant (proxy)
+  weeds: seedling                            # remaining 9 species
+cropandweed:
+  crops: desired_plant
+  weeds: weed
+roboflow_moss:
+  moss: moss
+inaturalist:
+  # mapped per taxon after filtering metadata
+  note: fill in taxon lists

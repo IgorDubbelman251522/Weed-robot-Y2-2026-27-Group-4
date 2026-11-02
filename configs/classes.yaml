@@ -1,0 +1,22 @@
+# Draft class definitions. Agree the exact wording as a team (e.g. seedling cutoff).
+classes:
+  - id: 0
+    name: weed
+    description: Established unwanted plant, e.g. dandelion or grass in a tile joint
+  - id: 1
+    name: seedling
+    description: Weed in its earliest stage (define size or leaf-count cutoff)
+  - id: 2
+    name: moss
+    description: Moss or algae films on surfaces
+  - id: 3
+    name: desired_plant
+    description: Flowers, lawn and planted borders that must not be touched
+  - id: 4
+    name: clean_surface
+    description: Bare tile, gravel or soil, including leaves, litter and shadows
+
+conditions:
+  lighting: [day_sun, overcast, dusk, night]
+  weather: [dry, wet, rain]
+  surface: [tiles, brick, gravel, soil]
