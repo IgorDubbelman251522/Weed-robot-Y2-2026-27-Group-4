@@ -20,6 +20,8 @@ dependencies:
   - pytest
   - pip:
       - timm
+      - transformers  # CLIP scene filter in tools/, Grounding DINO auto-labels
+      - ultralytics  # YOLO detector (notebooks/06_detection_colab.ipynb)
       - albumentations
       - streamlit
       - mlflow
