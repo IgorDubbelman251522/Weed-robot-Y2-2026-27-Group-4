@@ -22,7 +22,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from src.datasets import SPLITS, ManifestDataset, build_transforms, load_splits
-from src.eval import metrics, metrics_by_condition, pick_device, plot_confusion, predict
+from src.eval import condition_table, metrics, metrics_by_condition, pick_device, plot_confusion, predict
 from src.models import create_model
 
 try:
@@ -149,7 +149,7 @@ def main():
     model.load_state_dict(torch.load(run_dir / "best.pt", map_location=device, weights_only=False)["model"])
     preds, targets = predict(model, eval_loaders["test"], device)
     test = metrics(preds, targets, classes)
-    test["by_condition"] = metrics_by_condition(splits["test"], preds, targets)
+    test["by_condition"] = metrics_by_condition(splits["test"], preds, targets, classes)
     plot_confusion(test["confusion"], classes, run_dir / "confusion_test.png")
     (run_dir / "metrics.json").write_text(json.dumps(
         {"args": {k: str(v) for k, v in vars(args).items()}, "classes": classes,
@@ -157,6 +157,7 @@ def main():
 
     print(f"\nTEST  accuracy {test['accuracy']:.3f}  balanced accuracy {test['balanced_accuracy']:.3f}  "
           f"macro-F1 {test['macro_f1']:.3f}\n{test['report']}")
+    print("per condition:\n" + condition_table(test["by_condition"]))
     print(f"saved to {run_dir}")
     if mlflow:
         mlflow.log_metrics({f"test_{k}": test[k] for k in ("accuracy", "balanced_accuracy", "macro_f1")})

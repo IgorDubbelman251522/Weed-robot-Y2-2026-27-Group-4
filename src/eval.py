@@ -53,21 +53,53 @@ def metrics(preds, targets, classes):
     }
 
 
-def metrics_by_condition(rows, preds, targets, columns=("lighting", "weather", "surface")):
-    """Accuracy and macro F1 per value of each condition column (rows without a value are skipped)."""
+def metrics_by_condition(rows, preds, targets, classes=None, columns=("lighting", "weather", "surface")):
+    """Accuracy and macro F1 per value of each condition column (rows without a value are skipped).
+
+    With `classes`, every value also gets per-class precision and recall: the brief asks for
+    precision and recall per paving type. None means undefined (no such images, or never predicted).
+    """
     out = {}
     for column in columns:
         groups = defaultdict(list)
         for i, row in enumerate(rows):
             if row.get(column):
                 groups[row[column]].append(i)
-        out[column] = {
-            value: {"n": len(idx),
-                    "accuracy": accuracy_score(targets[idx], preds[idx]),
-                    "macro_f1": f1_score(targets[idx], preds[idx], average="macro", zero_division=0)}
-            for value, idx in sorted(groups.items())
-        }
+        out[column] = {}
+        for value, idx in sorted(groups.items()):
+            t, p = targets[idx], preds[idx]
+            entry = {"n": len(idx),
+                     "accuracy": accuracy_score(t, p),
+                     "macro_f1": f1_score(t, p, average="macro", zero_division=0)}
+            if classes:
+                entry["per_class"] = {name: precision_recall(t, p, k) for k, name in enumerate(classes)}
+            out[column][value] = entry
     return out
+
+
+def precision_recall(targets, preds, k):
+    """Precision and recall of class k (None when undefined) and how many images truly are k."""
+    hits = int(((preds == k) & (targets == k)).sum())
+    n_true, n_pred = int((targets == k).sum()), int((preds == k).sum())
+    return {"n": n_true,
+            "precision": hits / n_pred if n_pred else None,
+            "recall": hits / n_true if n_true else None}
+
+
+def condition_table(by_condition, focus="weed"):
+    """One line per condition value, with precision/recall of the `focus` class when available."""
+    def fmt(x):
+        return "  -  " if x is None else f"{x:.3f}"
+
+    lines = []
+    for column, values in by_condition.items():
+        for value, m in values.items():
+            line = f"  {column}={value:<10} n={m['n']:<5} acc {m['accuracy']:.3f}  macro-F1 {m['macro_f1']:.3f}"
+            pr = m.get("per_class", {}).get(focus)
+            if pr:
+                line += f"  {focus} precision {fmt(pr['precision'])} recall {fmt(pr['recall'])}"
+            lines.append(line)
+    return "\n".join(lines) or "  no lighting/weather/surface tags in this split yet, so no per-condition results"
 
 
 def plot_confusion(confusion, classes, path):
@@ -108,7 +140,7 @@ def main():
     dataset = ManifestDataset(rows, classes, build_transforms(False, ckpt["img_size"]))
     preds, targets = predict(model, DataLoader(dataset, batch_size=args.batch_size), device)
     result = metrics(preds, targets, classes)
-    result["by_condition"] = metrics_by_condition(rows, preds, targets)
+    result["by_condition"] = metrics_by_condition(rows, preds, targets, classes)
 
     out = args.checkpoint.parent
     plot_confusion(result["confusion"], classes, out / f"confusion_{args.split}.png")
@@ -123,6 +155,7 @@ def main():
     print(f"confusion matrix (rows = true, columns = predicted, order {classes}):")
     for row in result["confusion"]:
         print("  ", row)
+    print("per condition:\n" + condition_table(result["by_condition"]))
     print(f"saved to {out}")
 
 
