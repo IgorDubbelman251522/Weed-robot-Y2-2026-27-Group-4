@@ -4,40 +4,40 @@ Final presentation, 6 November 2026. One section per slide, in the order of the 
 
 ## 1. The weed robot
 
-Our final presentation for the one-week challenge from Uptime Robotics. In ten minutes: what they asked for, the dataset and detector we built, what it can see, what we can't claim, and our verdict on sending it down a street unsupervised.
+Kickoff was on Monday and this is our final presentation. We cover their question, the data and model we built, what it gets right, what we can't claim, and our answer.
 
-## 2. What Uptime Robotics asked for
+## 2. What Uptime Robotics asked
 
-The brief has four parts. The key point for us is the last line: Uptime Robotics would rather have a modest score with a real error analysis than an impressive number on pictures they can't trust. Everything that follows is framed that way.
+This is the question from their kickoff. They asked for a dataset, a model, precision and recall per paving type with an error analysis, and a yes or no on sending it down a street unsupervised. They also said a modest score that is well explained beats a high score on pictures nobody trusts.
 
-## 3. We built a dataset from iNaturalist
+## 3. No dataset existed, so we built one
 
-No public dataset of weeds in paving exists, so we mined iNaturalist: pavement-crack projects, Dutch observations of typical paving-joint weeds and stone mosses, and planted garden plants. CLIP, a zero-shot image model, throws out meadows, forests, potted plants and wide street shots. Each kept photo is cut into four crops, which look more like the robot's close view. Splitting by photographer stops the same street leaking from training into test. The labels are automatic, so they are noisy.
+There is no public dataset of weeds in paving, so we used iNaturalist, where people share plant photos. We downloaded about 25,000 photos from pavement-crack projects and Dutch sightings of common paving weeds, mosses and planted plants. An image model (CLIP) removed meadows, forests, potted plants and street views, which left 7,762. Cutting each photo into four close-up crops gave 13,571 images. We split by photographer, so the same street never appears in both training and test.
 
-## 4. What the dataset holds
+## 4. Lots of weeds, no seedlings
 
-Plenty of grown weeds, desired plants and moss, but zero seedlings, and seedlings are the whole point of the brief: the robot should end weeds while they are a few days old. iNaturalist users photograph plants they can identify, which means grown plants. The licence point matters because Uptime Robotics is a company: most of these photos are licensed for non-commercial use only.
+Plenty of grown weeds, planted plants and moss, but no seedlings, and seedlings are what the robot is meant to remove. People photograph plants they can identify, which means grown plants. Counts include the close-up crops.
 
-## 5. Our first detector: YOLO26n
+## 5. It finds about 3 in 4 plants
 
-There are no hand-drawn boxes, so Grounding DINO, an open-vocabulary detector, drew them automatically and YOLO26n learned from those. On photographers it never saw, it matches the automatic boxes with mAP50 0.84 for all three classes. Be clear that this is agreement with another model, not accuracy against a person. The size and speed matter for a robot: 2.4 million parameters and about 4 ms per image on a T4.
+There were no hand-drawn boxes, so another model (Grounding DINO) drew them, and our detector (YOLO26n: 2.4 million parameters, about 4 ms per image on a Colab T4 GPU) learned from those. On 816 test photos from photographers it never saw, it finds about three in four plants, and about four in five of its detections are right. Say clearly that this compares it with another model's boxes, not with a person's.
 
-## 6. What the detector sees
+## 6. Close-ups, not the robot's view
 
-Real output on the held-out test set. It finds the plants well, but look at what the photos are: flowers, shrubs and weeds photographed by people who wanted to identify them. The robot will look straight down at paving from close by, often at seedlings a few pixels wide. Credits for every photo are in manifests/inaturalist_attribution.csv.
+Output on test photos the model never saw. It finds the plants, but look at the photos: flowers, shrubs and weeds, shot up close by people who wanted to identify them. The robot will look straight down at paving, often at seedlings only a few pixels wide.
 
 ## 7. Live demo
 
-Before presenting: in the repo folder run "conda activate weed-robot" and then "streamlit run app/streamlit_app.py". The detector weights must be in models/yolo26n_weeds.pt. Use a photo of a real paving joint taken from above, ideally one with moss and a weed in it. Show the confidence slider: it is the trade-off between a missed weed and a false alarm, which leads into our question for Uptime Robotics about which mistake costs more.
+Before presenting: open a terminal in the repo folder, run conda activate weed-robot, then streamlit run app/streamlit_app.py. The detector file must be in models/yolo26n_weeds.pt. Use a photo of a paving joint taken from above. Move the confidence slider to show the trade-off between missed weeds and false alarms.
 
-## 8. What we can't claim
+## 8. What's missing
 
-This is the honest list. Our code already reports precision and recall per surface, lighting and weather, but it needs tagged photos to have anything to report. Without our own photos and a hand-checked test set, the 0.84 on the earlier slides is not a number we can stand behind.
+These gaps are behind our answer. Our code can already report precision and recall per surface, light and weather, but none of the photos have those tags. About 80% of the images are licensed for non-commercial use only, which matters because Uptime Robotics is a company.
 
-## 9. Our verdict
+## 9. Verdict: No.
 
-This is the yes-or-no the brief asked for, and our answer is no. The three reasons are the gaps that matter most: no seedlings, the wrong viewpoint, and scores nobody has checked. The positive finding is real but limited: the model separates the three plant classes well against automatic labels, and it is small and fast enough to run on a robot.
+This is the yes or no they asked for. Our answer is no, for three reasons: no seedlings, the wrong viewpoint, and scores no person has checked. What does work: it tells weeds, moss and planted plants apart well against automatic labels, and it is small and fast enough to run on a robot.
 
 ## 10. What would change our answer
 
-These four things would let anyone test the camera approach properly before the December decision. The last question sets the detector's confidence threshold: a missed weed grows back, a false alarm damages paving or planted green, and only Uptime Robotics can say which is worse for their customers.
+With these, someone could test a camera properly before the December decision. The last question is theirs to answer: a missed weed grows back, while a false alarm can damage paving or plants. Their answer sets the detector's confidence threshold.
