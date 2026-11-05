@@ -21,7 +21,7 @@ unsupervised.
 | Detector | YOLO26n trained on Colab, test mAP50 0.837 measured against automatic boxes |
 | Classifier | Training and evaluation pipeline in `src/`, no results yet |
 | Demo | `app/streamlit_app.py` runs the detector or a classifier on uploaded photos |
-| Own photos | Not collected yet |
+| Own photos | Not collected |
 
 ## Detector results so far
 
@@ -64,17 +64,29 @@ Splits are 80/10/10 by photographer, so one person's streets never appear in two
 Every label is automatic; expect roughly one in five to be wrong. About 80% of the images have a
 non-commercial licence (mostly CC BY-NC). Authors and links are in `manifests/inaturalist_attribution.csv`.
 
-## What is missing before we can give a verdict
+## Verdict
+
+We would not send this down a street unsupervised. The detector is small and fast enough for a robot and
+separates weeds, moss and planted green well against automatic labels, but it has never seen a seedling or
+the robot's top-down view, and none of its scores has been checked against hand-made labels.
+
+## Limitations
 
 - **Seedlings.** The brief is about young weeds, but the `seedling` class has no images, so neither model can
-  find them yet. iNaturalist mostly shows grown plants.
-- **Our own photos.** None yet. iNaturalist photos are handheld and taken from every angle, while the robot
-  looks straight down from close by.
+  find them. iNaturalist mostly shows grown plants.
+- **No photos of our own.** iNaturalist photos are handheld and taken from every angle, while the robot looks
+  straight down from close by.
 - **Conditions.** `lighting`, `weather` and `surface` are empty for every image, so there are no results per
-  paving type yet. `src/eval.py` reports precision and recall per condition as soon as photos are tagged.
-- **Hand-checked test labels.** Needed for both models before any number is one we can trust.
-- **Licences.** We need to check with Uptime Robotics whether non-commercial training images are a problem
-  for how they would use the model.
+  paving type. `src/eval.py` reports precision and recall per condition as soon as photos are tagged.
+- **No hand-checked test labels.** Every score here measures agreement with automatic labels.
+- **Licences.** About 80% of the training images are non-commercial; Uptime Robotics would need to check
+  whether that fits how they would use a model.
+
+## What would change our answer
+
+Top-down photos at the robot's camera height on real paving, tagged by surface, light and weather; an agreed
+seedling size with enough labelled seedlings; a hand-checked test set scored per paving type; training images
+licensed for commercial use; and a decision on which costs more, a missed weed or a false alarm.
 
 ## Running it
 
