@@ -1,8 +1,7 @@
-# Data lives outside git; track manifests instead
-data/raw/*
+# Raw datasets are tracked via Git LFS (see .gitattributes); interim/processed stay local until decided
 data/interim/*
 data/processed/*
-!data/raw/.gitkeep
+!data/raw/*.zip
 !data/interim/.gitkeep
 !data/processed/.gitkeep
 
