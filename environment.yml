@@ -1,10 +1,10 @@
 name: weed-robot
+# conda-forge only: the old pytorch channel gives a PyTorch that crashes on Windows next to newer MKL/OpenMP
 channels:
-  - pytorch
   - conda-forge
 dependencies:
   - python=3.11
-  - pytorch
+  - pytorch=*=cpu*
   - torchvision
   - pip
   - numpy
@@ -26,3 +26,6 @@ dependencies:
       - streamlit
       - mlflow
       - grad-cam
+variables:
+  # MKL and PyTorch load two copies of the same OpenMP runtime on Windows; without this, torch won't import
+  KMP_DUPLICATE_LIB_OK: "TRUE"
